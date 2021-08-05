@@ -1,5 +1,5 @@
 import React from 'react'
-import { Pane, majorScale } from 'evergreen-ui'
+import { Pane, majorScale, PrescriptionIcon } from 'evergreen-ui'
 import matter from 'gray-matter'
 import path from 'path'
 import fs from 'fs'
@@ -30,6 +30,26 @@ const Blog = ({ posts }) => {
 
 Blog.defaultProps = {
   posts: [],
+}
+
+export function getStaticProps(ctx) {
+  const cmsPosts = (ctx.preview ? postsFromCMS.draft : postsFromCMS.published).map((post) => {
+    const { data } = matter(post)
+    return data
+  })
+  const postsPath = path.join(process.cwd(), 'posts')
+  const fileNames = fs.readdirSync(postsPath)
+  const filePosts = fileNames.map((filename) => {
+    const fullPath = path.join(postsPath, filename)
+    const file = fs.readFileSync(fullPath, 'utf-8')
+    const { data } = matter(file)
+    return data
+  })
+
+  const posts = [...cmsPosts, ...filePosts]
+  return {
+    props: { posts },
+  }
 }
 
 export default Blog
